@@ -1,0 +1,34 @@
+const int botonPin = 2;
+bool botonPresionado = false;
+unsigned long tiempoInicio;
+
+void setup() {
+  pinMode(6, OUTPUT);
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+  pinMode(9, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(11, OUTPUT);
+  pinMode(12, OUTPUT);
+  pinMode(13, OUTPUT);
+
+  pinMode(botonPin, INPUT_PULLUP);
+  Serial.begin(9600);
+}
+
+void loop() {
+  if (digitalRead(botonPin) == LOW && !botonPresionado) {
+    botonPresionado = true;
+    tiempoInicio = millis();
+    digitalWrite(6, HIGH);
+    digitalWrite(7, HIGH);
+    Serial.println("Grupo Led A Encendidos");
+  }
+
+  if (botonPresionado && millis() - tiempoInicio >= 5000) {
+    botonPresionado = false;
+    digitalWrite(6, LOW);
+    digitalWrite(7, LOW);
+    Serial.println("Grupo Led A Apagados");
+  }
+}
