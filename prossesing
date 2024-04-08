@@ -1,0 +1,56 @@
+import processing.serial.*;
+
+Serial puerto; // Objeto para la comunicación serial
+boolean[] ledsEstado = new boolean[8]; // Estado de los LEDs
+int[] btnsPines = {2, 3, 4, 5}; // Pines de los botones
+int[] ledsPines = {6, 7, 8, 9, 10, 11, 12, 13}; // Pines de los LEDs
+int numBtns = 4;
+int numLeds = 8;
+
+void setup() {
+  size(400, 200);
+  // Inicia la comunicación serial con Arduino
+  puerto = new Serial(this, Serial.list()[0], 9600);
+  
+  // Inicializa los pines de los LEDs
+  for (int i = 0; i < numLeds; i++) {
+    pinMode(ledsPines[i], OUTPUT);
+  }
+  
+  // Inicializa los pines de los botones
+  for (int i = 0; i < numBtns; i++) {
+    pinMode(btnsPines[i], INPUT);
+  }
+}
+
+void draw() {
+  background(255);
+  // Dibuja los LEDs
+  for (int i = 0; i < numLeds; i++) {
+    fill(ledsEstado[i] ? color(255, 0, 0) : color(150));
+    ellipse(50 + i * 40, 50, 30, 30);
+  }
+  // Dibuja los botones
+  for (int i = 0; i < numBtns; i++) {
+    fill(digitalRead(btnsPines[i]) == HIGH ? color(0, 255, 0) : color(150));
+    rect(50 + i * 90, 120, 60, 30);
+  }
+}
+
+void mousePressed() {
+  for (int i = 0; i < numBtns; i++) {
+    if (mouseX > 50 + i * 90 && mouseX < 110 + i * 90 && mouseY > 120 && mouseY < 150) {
+      puerto.write("BTN" + i); // Envía un mensaje indicando qué botón se presionó
+      break;
+    }
+  }
+}
+
+void serialEvent(Serial p) {
+  String mensaje = p.readStringUntil('\n').trim();
+  if (mensaje.startsWith("LED")) {
+    int ledIndex = Integer.parseInt(mensaje.substring(3));
+    ledsEstado[ledIndex] = !ledsEstado[ledIndex]; // Cambia el estado del LED
+    digitalWrite(ledsPines[ledIndex], ledsEstado[ledIndex] ? HIGH : LOW); // Cambia el estado físico del LED
+  }
+}
